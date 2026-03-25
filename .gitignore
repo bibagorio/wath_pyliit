@@ -1,0 +1,53 @@
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+
+# --- Local environment / secrets ---
+local.properties
+.env
+.env.*
+*.local
+
+# --- Android / Gradle / Kotlin ---
+.gradle/
+.kotlin/
+**/build/
+.cxx/
+.externalNativeBuild/
+captures/
+app/release/
+app/debug/
+
+# Repo-local custom Gradle user home folders
+.gradle-user-home*/
+
+# --- Packaging / binaries ---
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+
+# --- Logs / temp ---
+*.log
+*.tmp
+*.swp
+
+# --- Python tooling (present in this repo) ---
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>pyLiit</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="brython.min.js"></script>
+  <script src="brython_stdlib.min.js"></script>
+</head>
+<body>
+  <div class="shell">
+
+    <header class="topbar">
+      <span class="logo">pyLiit</span>
+      <span class="logo-sub">// offline python interpreter</span>
+      <button id="saveBtn" class="btn ghost tbtn" title="Save as .py" aria-label="Save the current Python file">SAVE</button>
+      <span class="readydot" id="readyDot" title="Brython initialising..."></span>
+    </header>
+
+    <div class="mc-panel editor-panel">
+      <div class="mc-label">CODE <span class="lang-tag">Python</span></div>
+      <div class="editor-wrap">
+        <div id="lineNums" aria-hidden="true"></div>
+        <textarea id="code" spellcheck="false" autocapitalize="none" autocorrect="off" autocomplete="off"># Start coding here
+</textarea>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button id="settingsBtn" class="btn ghost icon-btn" title="Settings" aria-label="Open settings">&#9881;</button>
+      <label class="bar-lbl" for="exampleSelect">EXAMPLE</label>
+      <select id="exampleSelect" aria-label="Load an example snippet"></select>
+      <label class="bar-lbl" for="historySelect">HISTORY</label>
+      <select id="historySelect" aria-label="Load previously run code"></select>
+      <button id="clearBtn" class="btn ghost">CLEAR</button>
+      <div class="spacer"></div>
+      <button id="runBtn" class="btn run" disabled>&#9654;&nbsp;RUN</button>
+    </div>
+
+    <div class="mc-panel output-panel">
+      <div class="mc-label">OUTPUT <span id="statusMsg" class="status-msg"></span></div>
+      <pre id="output"></pre>
+    </div>
+
+  </div>
+
+  <script>
+    window.addEventListener("load", function () {
+      if (typeof brython === "function") {
+        brython({ debug: 0, cache: true });
+      }
+    });
+  </script>
+
+  <script type="text/python">
+from browser import document, window
+import sys
+import traceback
+
+
+def _append(text, cls):
+    if not text:
+        return
+    span = document.createElement("span")
+    span.textContent = str(text)
+    span.className = cls
+    document["output"].appendChild(span)
+
+
+class _StdoutBuf:
+    def write(self, value):
+        if value is None:
+            return
+        _append(value, "out-stdout")
+
+    def flush(self):
+        pass
+
+
+class _StderrBuf:
+    def write(self, value):
+        if value is None:
+            return
+        _append(value, "out-err")
+
+    def flush(self):
+        pass
+
+
+def _run_code(source):
+    document["output"].innerHTML = ""
+    previous_stdout = sys.stdout
+    previous_stderr = sys.stderr
+    sys.stdout = _StdoutBuf()
+    sys.stderr = _StderrBuf()
+    try:
+        exec(source, {"__name__": "__main__"})
+    except Exception:
+        traceback.print_exc()
+    finally:
+        sys.stdout = previous_stdout
+        sys.stderr = previous_stderr
+
+
+window.pyRunCode = _run_code
+document["readyDot"].classList.add("on")
+  </script>
+
+  <!-- Settings overlay (bottom sheet) -->
+  <div id="settingsOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="settings-panel">
+      <div class="settings-header">
+        <span class="settings-title">SETTINGS</span>
+        <button id="settingsClose" class="btn ghost sml" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">WORD WRAP</span>
+        <button id="wrapBtn" class="btn ghost sml">WRAP: OFF</button>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">THEME</span>
+        <div class="theme-grid" id="themeGrid">
+          <button class="btn ghost sml theme-btn active" data-theme="minecraft">MINECRAFT</button>
+          <button class="btn ghost sml theme-btn" data-theme="dracula">DRACULA</button>
+          <button class="btn ghost sml theme-btn" data-theme="nord">NORD</button>
+          <button class="btn ghost sml theme-btn" data-theme="light">LIGHT</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save dialog (centered) -->
+  <div id="saveOverlay" class="overlay save-overlay hidden" aria-hidden="true">
+    <div class="dialog-panel">
+      <div class="settings-header">
+        <span class="settings-title">SAVE FILE</span>
+        <button id="saveDialogClose" class="btn ghost sml" aria-label="Close">&#10005;</button>
+      </div>
+      <div class="dialog-body">
+        <input type="text" id="saveFilename" class="mc-input" placeholder="script.py"
+               autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"/>
+        <div id="overwriteWarn" class="warn-row hidden">&#9888; File already exists. Overwrite?</div>
+      </div>
+      <div class="dialog-footer">
+        <button id="saveCancelBtn" class="btn ghost">CANCEL</button>
+        <button id="saveConfirmBtn" class="btn run">SAVE</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="runner.js"></script>
+</body>
+</html>
